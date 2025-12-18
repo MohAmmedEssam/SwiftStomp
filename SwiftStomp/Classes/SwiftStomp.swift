@@ -666,6 +666,21 @@ extension SwiftStomp: URLSessionWebSocketDelegate {
         }
     }
 }
+// MARK: - URLSessionDelegate (Server Trust)
+
+extension SwiftStomp: URLSessionDelegate {
+    
+    /// Handles server trust challenges for secure connections.
+    public func urlSession(_ session: URLSession,
+                    didReceive challenge: URLAuthenticationChallenge,
+                    completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        guard let serverTrust = challenge.protectionSpace.serverTrust else {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+            return
+        }
+        completionHandler(.useCredential, URLCredential(trust: serverTrust))
+    }
+}
 
 // MARK: - SwiftStomp delegate
 public protocol SwiftStompDelegate: AnyObject{
