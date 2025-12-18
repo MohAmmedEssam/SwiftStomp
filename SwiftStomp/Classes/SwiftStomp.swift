@@ -34,6 +34,7 @@ public class SwiftStomp: NSObject {
     /// Auto ping peroperties
     fileprivate var pingTimer : Timer?
     fileprivate var pingInterval: TimeInterval = 10 //< 10 Seconds
+    fileprivate var timeoutInterval: TimeInterval = 30 //< 10 Seconds
     fileprivate var autoPingEnabled = false
 
     public weak var delegate: SwiftStompDelegate?
@@ -80,10 +81,16 @@ public class SwiftStomp: NSObject {
 
     public var autoReconnect = false
 
-    public init (host : URL, headers : [String : String]? = nil, httpConnectionHeaders : [String : String]? = nil){
+    public init (
+        host : URL,
+        timeoutInterval: TimeInterval = 30,
+        headers : [String : String]? = nil,
+        httpConnectionHeaders : [String : String]? = nil
+    ){
         self.host = host
         self.stompConnectionHeaders = headers
         self.httpConnectionHeaders = httpConnectionHeaders
+        self.timeoutInterval = timeoutInterval
         super.init()
         self.urlSession = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
         self.initReachability()
@@ -112,7 +119,7 @@ public class SwiftStomp: NSObject {
 
 /// Public Operating functions
 public extension SwiftStomp{
-    func connect(timeout : TimeInterval = 5, acceptVersion : String = "1.1,1.2", autoReconnect : Bool = false){
+    func connect(acceptVersion : String = "1.1,1.2", autoReconnect : Bool = false){
 
         self.stompLog(type: .info, message: "Connecting...  autoReconnect: \(autoReconnect)")
 
@@ -130,7 +137,7 @@ public extension SwiftStomp{
         self.acceptVersion = acceptVersion
 
         //** Time interval
-        urlRequest.timeoutInterval = timeout
+        urlRequest.timeoutInterval = timeoutInterval
 
         if let httpConnectionHeaders {
             for header in httpConnectionHeaders {
